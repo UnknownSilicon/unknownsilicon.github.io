@@ -51,7 +51,7 @@ paginate = 5
 
 [[params.social]]
   name = "mastodon"
-  url = "https://tech.lgbt/UnknownSilicon"
+  url = "https://tech.lgbt/@UnknownSilicon"
 
 
 [params.twitter]
