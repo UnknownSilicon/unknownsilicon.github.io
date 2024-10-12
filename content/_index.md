@@ -4,4 +4,4 @@
     framed = true
 +++
 
-Hello! This is very very work in progress. Come back later :3
+Hi! I'm Eris. This site documents projects I have/am working on, as well as anything I feel like blogging about. Expect software, hardware, mechanical design, and maybe some info dumping :3 
