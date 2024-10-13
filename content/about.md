@@ -3,4 +3,8 @@ title = "About"
 author = "UnknownSilicon"
 +++
 
-Coming soon :3
+// Picture here
+
+// Flags here?
+
+Hi! I'm Eris! I'm a software engineer and data wrangler by day, catgirl hacker by night. 
