@@ -1,3 +1,9 @@
 {{ if .Get "src" }}
+{{ if .Get "href"}}
+<a href="{{ .Get "href" | safeURL}}">
+{{ end }}
 <img src="{{ .Get "src" | safeURL }}" {{ with .Get "alt" }} alt="{{ . | plainify }}" {{ end }} class="{{ with .Get "position"}}{{ . }}{{ else -}} left {{- end }}" {{ with .Get "style" }} style="{{ . | safeCSS }}" {{ end }} {{ with .Get "width" }} width="{{ . | plainify }}" {{ end }} {{ with .Get "height" }} height="{{ . | plainify }}" {{ end }} />
+{{ if .Get "href"}}
+</a>
+{{ end }}
 {{ end }}
