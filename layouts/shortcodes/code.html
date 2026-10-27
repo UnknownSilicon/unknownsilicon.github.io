@@ -1,0 +1,8 @@
+<details style="border: 1px solid #ccc; border-radius: 4px; padding: 10px; margin: 15px 0;">
+  <summary style="cursor: pointer; font-weight: bold; margin-bottom: 8px;">
+    {{ .Get "title" | default "View Code" }}
+  </summary>
+  <div style="margin-top: 10px;">
+    {{ .Inner | markdownify}}
+  </div>
+</details>
