@@ -23,9 +23,11 @@ The server owner Diamondback (Aka "DB") talked about wanting custom mobs, custom
 
 PU was initially intended to only add custom mobs. At the time, there weren't easy APIs or free plugins that could provide this functionality. Existing solutions were paid, inflexible, or simply not what we needed. The goal here was simple: First, create a single custom mob (a "wisp"; A neutral mob made of cloud particles that dropped special items upon death) to prove it works, then create a framework around this to facilitate adding more.
 
+{{< img class=center-fig src=/wisp.png width=500px alt="This image depicts an in-game wisp. It is a puff of cloud particles. The wisp is next to portal blocks and standing on a floating island in the sunset." caption="A wisp">}}
+
 This was certainly not my proudest work, but I learned a lot about the internals of Minecraft servers, the associated toolchains, and working with obfuscated code. Minecraft/Paper 1.19 did not support custom mobs natively. The best we had was setting attributes via NBT (health, speed, invisible, etc.) In order to change behavior/pathfinding, we had to use "NMS" and Java reflection. "NMS" stands for Net Minecraft Server, used as a colloquial term for anything sitting in the `net.minecraft` Java package, which contains the internal server functionality. This very often involves accessing private methods through reflection and touching sensitive APIs.
 
-For a simple example, the following code block shows what's needed to clear the pathfinding goals and targets from a given Mob. Thankfully there's now an official API for this, but reflection nonsense has been unfortunately commonplace in Minecraft modding. Even today, other functionality/features still need reflection to access.
+For a simple example, the following code block shows what's needed to clear the pathfinding goals and targets from a given Mob. Thankfully there's now an official API for this, but reflection nonsense has been unfortunately commonplace in Minecraft modding. Even today, other functionality/features still need reflection to access. At the time, Minecraft internals were still obfuscated. [Community tools](https://mcsrc.dev/) existed to map between obfuscated Minecraft, and the de-obfuscated versions different projects used (Force, Fabric, and Bukkit all had their own mappings that differed slightly). Most of these tools no longer exist since Mojang now provides mappings, or entirely unobufuscated code.
 
 {{< code title="Reflection Example" >}}
 ```java
@@ -81,9 +83,11 @@ Sidenote: This code is bad and old, but it's here for historical reference. It's
 
 ```java
 //...
+// Add a Cloud particle effect for wisps with specific amount and timing parameters
 ParticleRegistry.getInstance().registerParticles("wisp", new ParticleOptions(Particle.CLOUD, 50, 0.5, 1, 0));
 //...
 
+// Wisps are based on Zombies, mostly arbitrarily
 public class EntityWisp extends Zombie {
 	public EntityWisp(EntityType<? extends Zombie> entitytypes, Level world) {
 		super(entitytypes, world);
@@ -104,6 +108,7 @@ public class EntityWisp extends Zombie {
 		//clearing Zombie goals
 		CustomEntityHelper.clearGoals(zombie);
 
+		// Wisps first attack their target if they have one, then randomly walk around
 		zombie.goalSelector.addGoal(0, new MeleeAttackGoal(zombie, 1.0, false));
 		zombie.goalSelector.addGoal(1, new RandomStrollGoal(zombie, 1.0));
 
@@ -116,6 +121,7 @@ public class EntityWisp extends Zombie {
 
 	public static EntityWisp spawn(JavaPlugin plugin, CraftServer server, CraftWorld world, Location l,
 	                               SpawnReason reason, Location origin) {
+		// FIrst, create and spawn a zombie, then set up the Wisp internal parameters for it
 		EntityWisp wisp = new EntityWisp(world.getHandle());
 		CraftZombie zombie = (CraftZombie) CraftEntity.getEntity(server, wisp);
 
@@ -128,6 +134,7 @@ public class EntityWisp extends Zombie {
 			return null;
 		}
 
+		// Save state to ensure custom mobs remain after server restarts
 		EntityRegistry.getInstance().registerEntity(zombie.getUniqueId().toString(), "wisp", wisp, reason, origin);
 
 		return wisp;
@@ -140,6 +147,7 @@ public class EntityWisp extends Zombie {
 
 		EntityWisp.initPathfinder(wisp);
 
+		// Start particle task if it isn't already running
 		if (!ParticleRegistry.getInstance().particleTaskRunning) {
 			BukkitTask task = new ParticleTask().runTaskTimer(plugin, 0, 10);
 			ParticleRegistry.getInstance().particleTaskRunning = true;
@@ -242,3 +250,8 @@ public class CraftWisp {
 ```
 {{< /code >}}
 
+# Wrap Up
+
+Custom Mobs has changed a lot since it's origin, mostly due to more accessible programming interfaces, that have allowed it to become a lot cleaner and more direct. This is not the only approach for this either. With a similar internal registry hack to what I'll talk about in the future, it's possible to add a new mob type that the server natively understands, allowing for even smoother compatability, as opposed to the current solution that must be based on existing entities. 
+
+In the next few posts of this series, I'll be talking about the modular loading system I developed to allow hotloading individual plugin components, a dynamic and data driven "Charms" system to add special effects that can be applied to items, and a semi-secret project to push the boundaries of what's possible with a Paper server and a vanilla client. 
